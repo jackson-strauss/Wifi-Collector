@@ -18,6 +18,9 @@ get_user_input() - prompts the user to type something and returns a string repre
 create_cell_from_file() - reads the data from a file and assigns the values to the Cell array. - also capable of resizing the array once full (dynamic)
 remove_from_array() - removes the element from the cell given the index - it move the other entries to the left by 1
 clear_cell() - given a pointer to a cell, resets all the values
+free_list() - frees the linked list 
+
+*note: Remove from array and clear cell are not used during this update due to the use of a linked list
 
 */
 
@@ -112,16 +115,7 @@ void create_cells_from_file(char *filename, CellNode **head, int *length) {
     /*
     Changed to a linkedlist in the function signature ^ 
     
-    A function that reads a cells from a file and allocates the values to a predefined empty array of cells.
-    The use of a double pointer is to allow us to change the array pointer and not a copy of the array pointer
-
-    Args:
-    filename : string name of the file to read from
-    **array : a double pointer to the cells array
-    *arr_index : the next empty index in which we want to add the cell into
-
-    Returns:
-    n/a
+    A function that reads a cells from a file and allocates the values to a predefined empty linked list.
     
     */
 
@@ -273,7 +267,7 @@ void create_cells_from_file(char *filename, CellNode **head, int *length) {
 
         
 }
-
+//not used 
 void remove_from_array(Cell *array, int index, int *length) { 
 
     // shifting all the elements down one, overring a value

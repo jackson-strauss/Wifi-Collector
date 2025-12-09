@@ -12,12 +12,12 @@
 
 File that contains all the main functions for the Wifi Collector lab project
 
-Assignment 2:
+Assignment 3:
 quit() - a function that prompts the user to quit the program - note that the dynamic memory is freed here
-collect() - a function that gets the user input, reads from that line and assigns values in the array read from the file
+collect() - a function that gets the user input, reads from that line and assigns values in the linked list read from the file
 delete_net() - a function that deletes a network with a matching ESSID by moving the entries up and clearing the last cell
 display() - a function that, given user input, displays the cells with the matching ID
-display_all() - displays all the cells in the array
+display_all() - displays all the cells in the list
 
 */
 
@@ -51,17 +51,8 @@ int quit() {
 void collect(CellNode **head, int *length) {
     /*
 
-    A function that takes in the  a double pointer of the cells array and the current index and inserts cells, requested by the user, into the array at the next available cell.
-    It gets the contents of these cells by reading from the specific file. THe use of the double pointer is to ensure that the global array is changed and not just a copy
-
-
-    Args:
-    Cell **array : a double pointer to the cells array which we want to add more cells into
-    int *length : a pointer thats the current length of the array
-
-    Returns:
-    n/a
-
+    A function that takes in the  a double pointer of the linked list and the current index and inserts cells, requested by the user, into the list at the next available cell.
+    It gets the contents of these cells by reading from the specific file.
     */
 
     for(;;) {
@@ -105,14 +96,6 @@ void delete_net(CellNode **head, int *length) {
     /*
 
     Asks the user for the the ESSID that they want to remove - it then uses linear search to find and remove the cell if it exists
-    In doing so we resize the array also
-
-    Args:
-    Cell *array : a pointer to the cell array
-    int *length : an pointer to the int size of the array
-
-    Returns:
-    n/a
     
     */
     
@@ -169,13 +152,7 @@ void display(CellNode *head) {
     /*
 
     A function that asks the user for the integer ID of the cell they want to display. If the cell is in the array it will print the contents. 
-    The function uses linear search since the array is unsorted. If the cell is not found then we print an error message
-
-    Args:
-    Cell *array : a pointer to the cells array
-
-    Returns:
-    n/a
+    The function uses linear search since the list is unsorted. If the cell is not found then we print an error message
     
     */
 
@@ -190,7 +167,7 @@ void display(CellNode *head) {
         int found = 0;
         CellNode *curr = head;
         
-        // using linear search to find the corresponding cell (if it exists) - since unordered cannot use binary search
+        // using linear search to find the corresponding cell (if it exists) 
         while (curr != NULL) {
             if (curr->data.id == choice) {
                 print_cell(&curr->data);
