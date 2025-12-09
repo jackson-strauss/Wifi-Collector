@@ -49,4 +49,9 @@ Mode string_to_mode(char *mode);
 char* encryption_key_to_string(Encryption_key ek);
 Encryption_key string_to_encryption_key(char *ek);
 
+typedef struct CellNode{
+    Cell data; 
+    struct CellNode *next;
+} CellNode; 
+
 #endif

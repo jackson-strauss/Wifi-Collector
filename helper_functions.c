@@ -108,9 +108,10 @@ char* get_user_input(char *message) {
 
 }
 
-void create_cells_from_file(char *filename, Cell **array, int *length) {
+void create_cells_from_file(char *filename, CellNode **head, int *length) {
     /*
-
+    Changed to a linkedlist in the function signature ^ 
+    
     A function that reads a cells from a file and allocates the values to a predefined empty array of cells.
     The use of a double pointer is to allow us to change the array pointer and not a copy of the array pointer
 
@@ -132,11 +133,11 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
         return;
     }
 
-    Cell *p_array = *array; // a pointer to the array
-    Cell *current_cell = &p_array[*length]; // a pointer to the current cell
+    Cell temp;              // temporary cell to fill from file
+    clear_cell(&temp);      // reuse the existing function to init fields
 
     char current_line[MAX]; // current line we are reading
-    int line_number = 1; // will go from 1-9
+    int line_number = 1;    // will go from 1–9
 
     while(fgets(current_line, MAX, rf) != NULL) {
        
@@ -145,38 +146,38 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
                 // case when it is just the cell name, need to extract the number
                 char *cell_num = split(current_line, ' '); // should return the number
                 int i_cell_num = atoi(cell_num);
-                current_cell->id = i_cell_num;
+                temp.id = i_cell_num;
 
                 break;
 
             case 2:
                 char *address = split(current_line, ' ');
                 address[strlen(address)-1] = '\0'; // get rid of the newline character
-                strcpy(current_cell->address, address); 
+                strcpy(temp.address, address); 
                 break;
             
             case 3:
                 char *essid = split(current_line, '"');
                 essid[strlen(essid)-1] = '\0'; // get rid of the newline character
-                strcpy(current_cell->ESSID, essid);
+                strcpy(temp.ESSID, essid);
                 break;
             
             case 4:
                 char *mode = split(current_line, ':');
                 mode[strlen(mode)-1] = '\0'; // get rid of the newline character
-                current_cell->mode = string_to_mode(mode);
+                temp.mode = string_to_mode(mode);
                 break;
             
             case 5:
                 char *channel = split(current_line, ':');
                 int i_channel = atoi(channel);
-                current_cell->channel = i_channel;
+                temp.channel = i_channel;
                 break;
             
             case 6:
                 char *encryption_key = split(current_line, ':');
                 encryption_key[strlen(encryption_key) - 1] = '\0';
-                current_cell->encryption_key = string_to_encryption_key(encryption_key);
+                temp.encryption_key = string_to_encryption_key(encryption_key);
                 break;
             
             case 7:
@@ -197,8 +198,8 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
                 int first = atoi(first_num);
                 int second = atoi(second_num);
 
-                current_cell->quality.first = first;
-                current_cell->quality.second = second;
+                temp.quality.first = first;
+                temp.quality.second = second;
                 break;
             
             case 8:
@@ -208,8 +209,9 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
                     f[i] = frequency[i];
 
                 }
+                f[5] = '\0';
                 float freq = atof(f);
-                current_cell->frequency = freq;
+                temp.frequency = freq;
                 break;
             
             case 9:
@@ -223,7 +225,7 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
 
                 sig[3] = '\0';
                 int s = atoi(sig);
-                current_cell->signal_level = s;
+                temp.signal_level = s;
                 break;
 
 
@@ -235,32 +237,35 @@ void create_cells_from_file(char *filename, Cell **array, int *length) {
         // if we have finished with the cell in the file
         if (line_number == 9) {
 
-            line_number = 1; // reset the cell line
-            *length += 1; // increment the length
+             CellNode *new_node = malloc(sizeof(CellNode));
+            if (new_node == NULL) {
+                fclose(rf);
+                return;
+            }
+            new_node->data = temp;
+            new_node->next = NULL;
 
-            // whenever our array is a multiple of 5 we resize it 
-            if(*length % 5 == 0 && *length != 0) {
-                printf("* * * Allocating another 5 positions in the dynamic array * * *\n");
-
-               // use the double pointer to redefine the array pointer in the main function
-                *array = realloc(*array, (*length + 5) * sizeof(Cell));
-                p_array = *array;
-
-            } 
+            if (*head == NULL) {
+                *head = new_node;
+            } else {
+                CellNode *curr = *head;
+                while (curr->next != NULL) {
+                    curr = curr->next;
+                }
+                curr->next = new_node;
+            }
 
             // printing the information about the cell we just inserted
-            printf("Network read from %s (added to position %d of the array)\n", filename, *length-1);
-            print_cell(current_cell);
+            printf("Network read from %s (added to position %d of the list)\n", filename, *length);
+            print_cell(&new_node->data);
             printf("\n");
             
-            // going to the next cell
-            current_cell = &p_array[*length];
-           
-
+            (*length)++;          // update size
+            clear_cell(&temp);    // reset temp in case of multiple cells
+            line_number = 1;      // reset for potential next cell
         } else {
-            line_number ++;
+            line_number++;
         }
-
 
     }
         fclose(rf);
@@ -303,4 +308,13 @@ void clear_cell(Cell *cell) {
     cell->frequency = 0;
     cell->signal_level = 0;
 
+}
+
+void free_list(CellNode *head){
+    CellNode *curr = head;
+    while (curr != NULL){
+        CellNode *next = curr->next;
+        free(curr);
+        curr = next; 
+    }
 }

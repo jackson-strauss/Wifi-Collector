@@ -48,7 +48,7 @@ int quit() {
     
 }
 
-void collect(Cell **array, int *length) {
+void collect(CellNode **head, int *length) {
     /*
 
     A function that takes in the  a double pointer of the cells array and the current index and inserts cells, requested by the user, into the array at the next available cell.
@@ -85,7 +85,7 @@ void collect(Cell **array, int *length) {
             strcat(filename, ".txt");
 
         
-            create_cells_from_file(filename, array, length);
+            create_cells_from_file(filename, head, length);
            
             // see if the user wants to add more cells
             strcpy(user_input, get_user_input("Do you want to add another access point? [y:N]: "));
@@ -101,7 +101,7 @@ void collect(Cell **array, int *length) {
 
 }
 
-void delete_net(Cell *array, int *length) {
+void delete_net(CellNode **head, int *length) {
     /*
 
     Asks the user for the the ESSID that they want to remove - it then uses linear search to find and remove the cell if it exists
@@ -120,35 +120,52 @@ void delete_net(Cell *array, int *length) {
     char *user_input = get_user_input("Indicate the ESSID (use \"\"): ");
     user_input[strlen(user_input)-1] = '\0';
 
+    //Setup the search 
+    CellNode *curr = *head;
+    CellNode *prev = NULL;
+    int index = 0;
+    int found_any = 0;
 
-    // then we just linear search the array for a value
-    for(int i = 0; i < *length; i++) {
 
         // need to format the ESSID to have the speech marks
+        while (curr != NULL) {
         char first[MAX] = "\"";
         char second[MAX] = "\"";
 
-        // format the string
-        strcat(first, array[i].ESSID);
+        strcat(first, curr->data.ESSID);
         strcat(first, second);
-       
-        if(strcmp(first, user_input) == 0){
+        //Checking for a match in ESSID and proceding with linear search 
+        if (strcmp(first, user_input) == 0) {
+            found_any = 1;
 
-            // use the remove function and also need to check how the array looks
-            remove_from_array(array, i, length);
-            printf("Found ESSID %s at position %d... deleting\n", first, i);
-            
-        
+            if (prev == NULL) {
+                *head = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+
+            CellNode *to_free = curr;
+            curr = curr->next;
+            free(to_free);
+            (*length)--;
+
+            printf("Found ESSID %s at position %d... deleting\n", first, index);
+            continue;
         }
+        
+        prev = curr;
+        curr = curr->next;
+        index++;
+    }
+
+    if (!found_any) {
+        printf("No matching ESSID found.\n");
     }
 
     printf("\n");
-
-
-
 }
 
-void display(Cell *array) {
+void display(CellNode *head) {
     /*
 
     A function that asks the user for the integer ID of the cell they want to display. If the cell is in the array it will print the contents. 
@@ -171,16 +188,15 @@ void display(Cell *array) {
         printf("\n");
 
         int found = 0;
-
+        CellNode *curr = head;
+        
         // using linear search to find the corresponding cell (if it exists) - since unordered cannot use binary search
-        for(int i = 0; i < ARRAY_SIZE; i++) { // was struggling to get the size of the array using sizeof - can just use array size - both O(N) anyways
-            Cell current_cell = array[i];
-
-            if (current_cell.id == choice) {
-                print_cell(&current_cell);
+        while (curr != NULL) {
+            if (curr->data.id == choice) {
+                print_cell(&curr->data);
                 found = 1; // marking the cell as found
             }
-
+            curr = curr->next; 
         }
 
         // if we did not find the cell we print a message to the user
@@ -203,24 +219,17 @@ void display(Cell *array) {
    
 }
 
-void display_all(Cell *array, int length) {
+void display_all(CellNode *head, int length) {
     /*
     
-    A function that displays all the cells currently in the array and prints out a formatted version of them
-
-    Args:
-    Cell *array : a pointer to the array of cells
-    int length : the size of the array
-
-
-    Returns:
-    n/a
+    A function that displays all the cells currently in the list and prints out a formatted version of them
     */
 
-    for(int i = 0; i < length; i++) {
-        print_cell(&array[i]);
+    CellNode *curr = head;
+    while (curr != NULL) {
+        print_cell(&curr->data);
+        curr = curr->next;
     }
-
     printf("\n");
 
 }

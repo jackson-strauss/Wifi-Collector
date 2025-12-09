@@ -7,11 +7,10 @@
 #include "helper_functions.h"
 #include "cell.h"
 
-#define SIZE 5
 
 
 int main() {
-    Cell *array = malloc(SIZE * sizeof(Cell));
+    CellNode *head = NULL;     // start with empty list
     int length = 0;
     int *p_length = &length;
 
@@ -32,10 +31,9 @@ int main() {
         switch(choice) {
             case 1:
                 int val = quit();
-
                 // quit early
                 if (val == 1) {
-                    free(array);
+                    free_list(head); // Free all nodes
                     printf("\nGoodbye !\n");
 
                     return 0;
@@ -43,7 +41,7 @@ int main() {
             break;
 
             case 2:
-                collect(&array, p_length);
+                collect(&head, p_length);
 
             break;
 
@@ -52,7 +50,7 @@ int main() {
             break;
 
             case 5:
-                delete_net(array, p_length);
+                delete_net(&head, p_length);
 
             break;
 
@@ -71,12 +69,12 @@ int main() {
 
 
             case 9:
-                display(array);
+                display(head);
             break;
 
 
             case 10:
-                display_all(array, length);
+                display_all(head, length);
             break;
 
 
